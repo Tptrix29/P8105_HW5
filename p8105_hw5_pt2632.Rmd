@@ -8,7 +8,7 @@ date: "`r Sys.Date()`"
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-```{r lib-import}
+```{r lib-import, message=FALSE}
 library(tidyverse)
 ```
 
@@ -17,7 +17,7 @@ library(tidyverse)
 The Washington Post has gathered data on homicides in 50 large U.S. cities and made the data available through a GitHub repository here. You can read their accompanying article here.
 
 Describe the raw data. 
-```{r}
+```{r, message=FALSE}
 homicide = read_csv("./datasets/homicide-data.csv") |>
         mutate(city_state = str_c(city, state, sep = ', '))
 ```
@@ -92,7 +92,7 @@ test_result |>
         geom_point() +
         geom_errorbar(aes(ymin = conf_low, ymax = conf_high)) +
         theme_bw() +
-        labs(x = "", y = "Estimated proportion", title = "unsolved homicide proportion") +
+        labs(x = "", y = "Estimated proportion", title = "Unsolved homicide proportion") +
         theme(plot.title = element_text(hjust = 0.5), axis.title.x=element_blank(), axis.text.x=element_blank(), axis.ticks.x=element_blank())
 ```
 
@@ -102,11 +102,40 @@ test_result |>
 This zip file contains data from a longitudinal study that included a control arm and an experimental arm. Data for each participant is included in a separate file, and file names include the subject ID and arm.
 
 Create a tidy dataframe containing data from all participants, including the subject ID, arm, and observations over time:
+```{r, message=FALSE}
+pth = "./datasets/data/"
+data_files = list.files(pth)
+extract_info = function(filename, pth){
+        tibble(
+                read_csv(str_c(pth, filename))
+        )
+}
+longitudial_data = tibble(
+        id = str_extract(data_files, pattern = "\\d+"),
+        arm = str_extract(data_files, pattern = "^[a-zA-Z]+"),
+        data = map(data_files, extract_info, pth)
+        ) |> unnest(data)
+```
+
+
 
 Start with a dataframe containing all file names; the list.files function will help
 Iterate over file names and read in data for each subject using purrr::map and saving the result as a new variable in the dataframe
+
 Tidy the result; manipulate file names to include control arm and subject ID, make sure weekly observations are “tidy”, and do any other tidying that’s necessary
+
 Make a spaghetti plot showing observations on each subject over time, and comment on differences between groups.
+```{r}
+longitudial_data |> 
+        pivot_longer(starts_with("week_"), names_prefix = "week_", names_to = "week") |>
+        mutate(label = str_c(id, arm, sep = "_"), week = as.numeric(week)) |>
+        ggplot(aes(x = week, y = value, color = label)) +
+        geom_path() +
+        theme_bw() +
+        labs(x = "Week", y = "Value", title = "Longitudial Value") +
+        theme(plot.title = element_text(hjust = 0.5))
+```
+
 
 ## Problem 3
 When designing an experiment or analysis, a common question is whether it is likely that a true effect will be detected – put differently, whether a false null hypothesis will be rejected. The probability that a false null hypothesis is rejected is referred to as power, and it depends on several factors, including: the sample size; the effect size; and the error variance. In this problem, you will conduct a simulation to explore power in a one-sample t-test.
