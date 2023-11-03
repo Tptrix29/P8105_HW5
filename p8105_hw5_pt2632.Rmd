@@ -15,14 +15,15 @@ library(latex2exp)
 
 
 ## Problem 1
+### Data Import
 Describe the raw data. 
 ```{r, message=FALSE}
-homicide = read_csv("./datasets/homicide-data.csv") |>
-        mutate(city_state = str_c(city, state, sep = ', '))
+homicide = read_csv("./datasets/homicide-data.csv") 
 ```
 There are `r nrow(homicide)` rows and `r ncol(homicide)` columns in the dataset.
 
 **Variables**:
+
 - `uid`: unique identifier
 
 - `reported_date`: date of homicide accident
@@ -47,8 +48,11 @@ There are `r nrow(homicide)` rows and `r ncol(homicide)` columns in the dataset.
 
 - `disposition`: disposition outcome of homicide accident
   
-
-
+### Data Manipulation
+```{r}
+homicide = homicide|>
+        mutate(city_state = str_c(city, state, sep = ', '))
+```
 
 ```{r}
 homicide |> 
@@ -65,9 +69,7 @@ homicide |>
         summarise(unsolved_count = n()) |>
         knitr::kable(caption = "Total number of unsolved homicides")
 ```
-
-
-For the city of Baltimore, MD, use the prop.test function to estimate the proportion of homicides that are unsolved; save the output of prop.test as an R object, apply the broom::tidy to this object and pull the estimated proportion and confidence intervals from the resulting tidy dataframe.
+### Proportion Testing
 ```{r}
 baltimore = homicide |> 
         filter(city == "Baltimore") |>
@@ -76,9 +78,9 @@ prop_test_obj = prop.test(sum(baltimore$unsolved), nrow(baltimore))
 prop_test_df = broom::tidy(prop_test_obj)
 ```
 Estimated Proportion: `r prop_test_df$estimate`
+
 Confidence Interval: (`r prop_test_df$conf.low`, `r prop_test_df$conf.high`)
 
-Now run prop.test for each of the cities in your dataset, and extract both the proportion of unsolved homicides and the confidence interval for each. Do this within a “tidy” pipeline, making use of purrr::map, purrr::map2, list columns and unnest as necessary to create a tidy dataframe with estimated proportions and CIs for each city.
 ```{r}
 tidy = function(city_name, df){
         city_data = df |> 
@@ -105,8 +107,7 @@ test_result = tibble(
 test_result |> knitr::kable(caption = "Estimated proportion and CI of unsolved homicides")
 ```
 
-
-Create a plot that shows the estimates and CIs for each city – check out geom_errorbar for a way to add error bars based on the upper and lower limits. Organize cities according to the proportion of unsolved homicides.
+### Plot
 
 ```{r}
 test_result |>
@@ -120,9 +121,8 @@ test_result |>
 ```
 
 
-
 ## Problem 2
-This zip file contains data from a longitudinal study that included a control arm and an experimental arm. Data for each participant is included in a separate file, and file names include the subject ID and arm.
+### Data Import
 
 ```{r, message=FALSE}
 pth = "./datasets/data/"
@@ -147,7 +147,7 @@ longitudial_data = data_files |>
 ```
 
 
-Make a spaghetti plot showing observations on each subject over time.
+### Plot
 ```{r}
 longitudial_data |> 
         pivot_longer(starts_with("week_"), names_prefix = "week_", names_to = "week") |>
@@ -203,6 +203,7 @@ exp_data |>
         theme(plot.title = element_text(hjust = 0.5))
 ```
 Association between effect size and power: 
+
 In the figuer, the larger $\mu$ leads to the higher rejection count, which equals to the higher power.
 So the larger the effect size, the higher the power.
 
@@ -237,7 +238,7 @@ exp_data |>
 ```
 
 
-The sample average of $\hat{\mu}$ across tests for which the null is rejected gradually equal to the true value of $\mu$ in approximation along with the increasing of $\mu$.
+The sample average of $\hat{\mu}$ across tests for which the null is rejected gradually equal to the true value of $\mu$ along with the increasing of $\mu$.
 
-Reason: 
+**Reason**: The samples with extremely large $\hat{\mu}$ than $\mu$ tend to be rejected for the null hypothesis when the $\mu$ is relatively small, so the mean of $\hat{\mu}$ is larger than $\mu$. When the $\mu$ becomes greater, the samples with $\hat{\mu}$ fluctuating around $\mu$ will get rejected result for null hypothesis, so the mean of $\hat{\mu}$ is asymptotic to the $\mu$.
 
