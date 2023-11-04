@@ -17,7 +17,7 @@ library(latex2exp)
 ## Problem 1
 ### Data Import
 Describe the raw data. 
-```{r, message=FALSE}
+```{r , message=FALSE}
 homicide = read_csv("./datasets/homicide-data.csv") 
 ```
 There are `r nrow(homicide)` rows and `r ncol(homicide)` columns in the dataset.
@@ -159,6 +159,7 @@ longitudial_data |>
         theme(plot.title = element_text(hjust = 0.5)) + 
         facet_grid(. ~ arm)
 ```
+
 The values of `con` group are fluctuating in specific range while that of `exp` group are with significant increasing trend along with the time.
 
 ## Problem 3
@@ -202,9 +203,10 @@ exp_data |>
         labs(x = TeX("$\\mu$"), y = TeX("Rejection count"), title = TeX("Rejection count - $\\mu$")) +
         theme(plot.title = element_text(hjust = 0.5))
 ```
+
 Association between effect size and power: 
 
-In the figuer, the larger $\mu$ leads to the higher rejection count, which equals to the higher power.
+In the figure, the larger $\mu$ leads to the higher rejection count, which equals to the higher power.
 So the larger the effect size, the higher the power.
 
 
